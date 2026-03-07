@@ -6,12 +6,15 @@ The core idea is simple:
 
 create packet → sign packet → verify packet → process handoff
 
----
-
 ## Install
 
 ```bash
 pip install trusthandoff
+```
+
+## Minimal Example
+
+```python
 from datetime import datetime, timedelta, timezone
 from trusthandoff import (
     AgentIdentity,
@@ -21,7 +24,6 @@ from trusthandoff import (
     verify_packet,
     process_handoff
 )
-```bash
 
 # create agent identities
 planner = AgentIdentity.generate()
@@ -58,34 +60,34 @@ decision = process_handoff(signed_packet)
 
 print(decision.decision)
 print(decision.reason)
-
----
+```
 
 Expected output:
 
+```
 ACCEPT
 Packet verified and valid
+```
 
----
-
-Core primitives
+## Core primitives
 
 TrustHandoff revolves around four primitives:
 
+```
 SignedTaskPacket
 DelegationEnvelope
 DelegationChain
 PacketDecision
+```
 
 These primitives allow verifiable delegation between AI agents.
 
----
-
-Next steps
+## Next steps
 
 Explore:
 
+```
 examples/
 adapters/
 specs/
-
+```

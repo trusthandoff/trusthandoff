@@ -1,66 +1,81 @@
 # TrustHandoff
 
-Install:
+TrustHandoff is a lightweight protocol and SDK for **verifiable task delegation between AI agents**.
 
-pip install trusthandoff
+It defines a canonical structure for transferring tasks between agents with:
 
-TrustHandoff is a lightweight SDK for verifiable task delegation between AI agents.
-
-It provides a canonical structure for transferring tasks between agents with:
-
-- identity
-- permissions
-- bounded execution
-- provenance
+- agent identity
 - cryptographic signatures
+- bounded execution permissions
+- delegation chains
+- verifiable decision logic
 
-TrustHandoff aims to become a secure delegation layer for multi-agent systems.
-
----
-
-## Why TrustHandoff exists
-
-Current agent ecosystems solve only part of the problem:
-
-Agent ↔ tools → MCP  
-Agent ↔ communication → A2A  
-Secure task delegation → missing
-
-TrustHandoff fills this gap by defining a SignedTaskPacket that allows agents to safely hand off tasks.
+TrustHandoff acts as a **delegation trust layer** for multi-agent systems.
 
 ---
 
-## Delegation flow
+# Why TrustHandoff exists
 
-```mermaid
-flowchart LR
-    A[Planner Agent] -->|Create SignedTaskPacket| B[TrustHandoff Packet]
-    B --> C[Research Agent]
-    C --> D[Execute Task]
+Modern agent frameworks solve orchestration and communication.
+
+They do not solve **verifiable delegation**.
+
+| Layer | Example |
+|------|------|
+| Agent ↔ tools | MCP |
+| Agent ↔ communication | A2A |
+| Agent orchestration | LangGraph / CrewAI / AutoGen |
+| **Agent delegation trust** | TrustHandoff |
+
+TrustHandoff introduces a portable delegation primitive:
+
+```
+SignedTaskPacket
+```
+
+This packet allows agents to safely hand off tasks while preserving:
+
+- authority
+- permissions
+- provenance
+- cryptographic verification
+
+---
+
+# Installation
+
+```
+pip install trusthandoff
 ```
 
 ---
 
-## Installation
+# Quickstart
 
-pip install trusthandoff
-
----
-
-## Example
+Minimal example:
 
 ```python
 from datetime import datetime, timedelta, timezone
-from trusthandoff import SignedTaskPacket, Permissions
+from trusthandoff import (
+    AgentIdentity,
+    Permissions,
+    SignedTaskPacket,
+    sign_packet,
+    verify_packet,
+    process_handoff
+)
+
+planner = AgentIdentity.generate()
+research = AgentIdentity.generate()
 
 packet = SignedTaskPacket(
-    packet_id="pk_001",
-    task_id="task_001",
-    from_agent="agent:planner",
-    to_agent="agent:research",
+    packet_id="pk_example",
+    task_id="task_example",
+    from_agent=planner.agent_id,
+    to_agent=research.agent_id,
     issued_at=datetime.now(timezone.utc),
     expires_at=datetime.now(timezone.utc) + timedelta(minutes=10),
-    nonce="123",
+    nonce="nonce-example",
     intent="Research company background",
     context={"company": "Example Corp"},
     permissions=Permissions(
@@ -68,73 +83,47 @@ packet = SignedTaskPacket(
         max_tool_calls=5
     ),
     signature_algo="Ed25519",
-    signature="signature",
-    public_key="public_key"
+    signature="",
+    public_key=planner.public_key_pem
 )
+
+signed_packet = sign_packet(packet, planner)
+
+verify_packet(signed_packet)
+
+decision = process_handoff(signed_packet)
+
+print(decision.decision)
+print(decision.reason)
 ```
----
 
-## Example script
+Expected output:
 
-examples/example_agents.py
-
-Run with:
-
-python examples/example_agents.py
+```
+ACCEPT
+Packet verified and valid
+```
 
 ---
 
-## Core primitive
+# Core primitives
 
-TrustHandoff defines a canonical task transfer structure:
+TrustHandoff revolves around four primitives:
 
+```
 SignedTaskPacket
+DelegationEnvelope
+DelegationChain
+PacketDecision
+```
 
-This packet includes:
-
-- task identity
-- agent identity
-- permissions
-- constraints
-- provenance
-- cryptographic signature
-
-## Current primitives
-
-TrustHandoff v0.2.0 currently includes:
-
-- SignedTaskPacket
-- AgentIdentity
-- sign_packet()
-- verify_packet()
-- validate_packet()
-- PacketDecision
-- process_handoff()
-- packet_to_dict()
-- packet_from_dict()
+These primitives allow verifiable multi-hop delegation between agents.
 
 ---
 
-## Vision
+# Framework adapters
 
-TrustHandoff aims to become the trust layer for agent delegation in multi-agent systems.
-
-Possible integrations:
-
-- LangGraph
-- AutoGen
-- CrewAI
-- OpenAI Agents
-- LlamaIndex
-- custom agent runtimes
-
----
-
-## Framework Adapters
-
-TrustHandoff includes adapters for major multi-agent frameworks.
-
-These adapters map framework-native delegation events into TrustHandoff protocol primitives.
+TrustHandoff provides adapters for major agent frameworks.
 
 Current adapters:
 
@@ -142,18 +131,45 @@ Current adapters:
 - AutoGen
 - LangGraph
 
-Each adapter converts framework delegation flows into:
+These adapters map framework-native delegation events into TrustHandoff primitives.
 
-SignedTaskPacket → DelegationEnvelope → PacketDecision
+See:
 
-This allows TrustHandoff to function as a **delegation trust layer** on top of existing agent orchestration frameworks.
-
-Adapter documentation:
-
+```
 specs/adapters.md
+```
 
 ---
 
-## License
+# Specification
+
+Protocol specifications:
+
+```
+specs/trusthandoff-spec-v0.1.md
+specs/trusthandoff-spec-v0.2.md
+```
+
+---
+
+# Examples
+
+Example flows are available in:
+
+```
+examples/
+```
+
+---
+
+# Vision
+
+TrustHandoff aims to become the **trust layer for delegation in multi-agent systems**.
+
+Rather than replacing agent frameworks, TrustHandoff complements them by providing a secure delegation primitive.
+
+---
+
+# License
 
 MIT
