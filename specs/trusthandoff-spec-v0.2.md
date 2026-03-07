@@ -296,3 +296,85 @@ TrustHandoff handles trusted delegation.
 ## Canonical statement
 
 TrustHandoff standardizes verifiable task delegation between AI agents through a SignedTaskPacket carrying identity, intent, context, permissions, constraints, provenance, and cryptographic proof, along with canonical signing, verification, validation, decision, handoff, and serialization flows.
+
+---
+
+## DelegationChain
+
+TrustHandoff v0.2 introduces DelegationChain.
+
+DelegationChain tracks the path of delegation across multiple agents.
+
+Fields:
+
+- packet_ids
+- agents
+
+Example:
+
+Agent A -> Agent B -> Agent C
+
+The DelegationChain records:
+
+packet_ids = [pk_A, pk_B]
+agents = [agent:A, agent:B]
+
+Purpose:
+
+- audit trail
+- delegation depth tracking
+- future permission narrowing enforcement
+
+---
+
+
+## DelegationPolicy
+
+TrustHandoff v0.2 introduces a first delegation policy rule:
+
+permissions_child ⊆ permissions_parent
+
+This means that a child delegation may reduce authority, but must never expand authority beyond what the parent packet allowed.
+
+Current primitive:
+
+- check_permission_narrowing(parent, child)
+
+Behavior:
+
+- returns True if child allowed_actions is a subset of parent allowed_actions
+- returns False if child expands authority
+
+Purpose:
+
+- prevent delegation authority escalation
+- support future safe multi-hop delegation
+- provide the first formal protocol invariant
+
+---
+
+
+## DelegationEnvelope
+
+TrustHandoff v0.2 introduces DelegationEnvelope as the canonical transport object.
+
+DelegationEnvelope groups together:
+
+- a SignedTaskPacket
+- a DelegationChain
+
+Structure:
+
+DelegationEnvelope
+    ├── packet : SignedTaskPacket
+    └── chain  : DelegationChain
+
+Purpose:
+
+- provide a single object that carries both the task and its delegation history
+- support future policy enforcement across multiple hops
+- enable portable protocol transport between agent runtimes
+
+The SignedTaskPacket remains the atomic unit of delegation.
+
+DelegationEnvelope represents the transport container used to move packets across a delegation chain.
