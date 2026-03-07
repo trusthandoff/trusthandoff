@@ -130,6 +130,30 @@ Possible integrations:
 
 ---
 
+## Framework Adapters
+
+TrustHandoff includes adapters for major multi-agent frameworks.
+
+These adapters map framework-native delegation events into TrustHandoff protocol primitives.
+
+Current adapters:
+
+- CrewAI
+- AutoGen
+- LangGraph
+
+Each adapter converts framework delegation flows into:
+
+SignedTaskPacket → DelegationEnvelope → PacketDecision
+
+This allows TrustHandoff to function as a **delegation trust layer** on top of existing agent orchestration frameworks.
+
+Adapter documentation:
+
+specs/adapters.md
+
+---
+
 ## License
 
 MIT
