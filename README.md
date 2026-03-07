@@ -1,5 +1,9 @@
 # TrustHandoff
 
+Install:
+
+pip install trusthandoff
+
 TrustHandoff is a lightweight SDK for verifiable task delegation between AI agents.
 
 It provides a canonical structure for transferring tasks between agents with:
@@ -34,7 +38,8 @@ pip install trusthandoff
 
 ## Example
 
-from datetime import datetime, timedelta, timezone  
+```python
+from datetime import datetime, timedelta, timezone
 from trusthandoff import SignedTaskPacket, Permissions
 
 packet = SignedTaskPacket(
@@ -55,7 +60,7 @@ packet = SignedTaskPacket(
     signature="signature",
     public_key="public_key"
 )
-
+```
 ---
 
 ## Example script
