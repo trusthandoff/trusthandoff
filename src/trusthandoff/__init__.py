@@ -25,6 +25,8 @@ from .capability_chain_validation import validate_capability_chain
 from .api import verify_capability_chain
 from .capability_signing import sign_capability, verify_capability_signature
 from .capability_token import encode_capability_token, decode_capability_token
+from .capability_envelope import CapabilityTokenEnvelope
+from .envelope_security import verify_envelope_security
 
 __all__ = [
     "DelegationChain",
@@ -62,5 +64,7 @@ __all__ = [
     "verify_capability_signature",
     "encode_capability_token",
     "decode_capability_token",
+    "CapabilityTokenEnvelope",
+    "verify_envelope_security",
 ]
 
