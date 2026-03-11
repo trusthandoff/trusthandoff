@@ -4,6 +4,7 @@ from .envelope import DelegationEnvelope
 from .middleware import TrustHandoffMiddleware
 from .capability import DelegationCapability
 from .capability_chain_validation import validate_capability_chain
+from .capability_signing import verify_capability_signature
 
 def verify_envelope(
     envelope: DelegationEnvelope,
@@ -30,6 +31,7 @@ def verify_envelope(
     middleware = TrustHandoffMiddleware(max_depth=max_depth)
     return middleware.handle(envelope)
 
+
 def verify_capability_chain(
     capabilities: list[DelegationCapability],
     registry: AgentRegistry | None = None,
@@ -46,6 +48,9 @@ def verify_capability_chain(
                 return False
 
             if expected_key != cap.public_key:
+                return False
+
+            if not verify_capability_signature(cap):
                 return False
 
     return validate_capability_chain(capabilities)

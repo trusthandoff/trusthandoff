@@ -23,6 +23,8 @@ from .agent_registry import AgentRegistry
 from .capability import DelegationCapability
 from .capability_chain_validation import validate_capability_chain
 from .api import verify_capability_chain
+from .capability_signing import sign_capability, verify_capability_signature
+from .capability_token import encode_capability_token, decode_capability_token
 
 __all__ = [
     "DelegationChain",
@@ -56,5 +58,9 @@ __all__ = [
     "AgentRegistry",
     "DelegationCapability",
     "verify_capability_chain",
+    "sign_capability",
+    "verify_capability_signature",
+    "encode_capability_token",
+    "decode_capability_token",
 ]
 
