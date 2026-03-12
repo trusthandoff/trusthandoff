@@ -29,6 +29,8 @@ class SignedTaskPacket(BaseModel):
     expires_at: datetime
     nonce: str
 
+    capability_token: Optional[str] = None
+
     intent: str
     task_type: Optional[str] = None
     goal: Optional[str] = None

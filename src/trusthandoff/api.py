@@ -5,6 +5,9 @@ from .middleware import TrustHandoffMiddleware
 from .capability import DelegationCapability
 from .capability_chain_validation import validate_capability_chain
 from .capability_signing import verify_capability_signature
+from .revocation import CapabilityRevocationRegistry
+from .revocation_validation import is_chain_revoked
+from .execution_control import (execute_authorized_action,execute_packet_authorized_action,)
 
 def verify_envelope(
     envelope: DelegationEnvelope,
@@ -35,13 +38,20 @@ def verify_envelope(
 def verify_capability_chain(
     capabilities: list[DelegationCapability],
     registry: AgentRegistry | None = None,
+    revocation_registry=None,
 ) -> bool:
-    """
-    Public API to verify a capability chain.
-    """
+
+    if revocation_registry is not None:
+        if is_chain_revoked(capabilities, revocation_registry):
+            return False
 
     if registry is not None:
         for cap in capabilities:
+
+            if revocation_registry is not None:
+                if revocation_registry.is_revoked(cap.capability_id):
+                    return False
+
             expected_key = registry.resolve(cap.issuer_agent)
 
             if expected_key is None:

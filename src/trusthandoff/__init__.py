@@ -27,6 +27,12 @@ from .capability_signing import sign_capability, verify_capability_signature
 from .capability_token import encode_capability_token, decode_capability_token
 from .capability_envelope import CapabilityTokenEnvelope
 from .envelope_security import verify_envelope_security
+from .revocation import CapabilityRevocationRegistry
+from .revocation_validation import is_chain_revoked
+from .authorization import is_action_authorized
+from .execution_control import (execute_authorized_action, execute_packet_authorized_action,)
+from .capability_propagation import derive_capability_token
+from .packet_propagation import derive_packet_with_capability
 
 __all__ = [
     "DelegationChain",
@@ -66,5 +72,11 @@ __all__ = [
     "decode_capability_token",
     "CapabilityTokenEnvelope",
     "verify_envelope_security",
+    "CapabilityRevocationRegistry",
+    "is_chain_revoked",
+    "is_action_authrorized",
+    "execute_authorized_action",
+    "derive_capability_token",
+    "derive_packet_with_capability",
 ]
 
