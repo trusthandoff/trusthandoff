@@ -10,6 +10,9 @@ from .revocation_validation import is_chain_revoked
 from .capability_token import decode_capability_token
 from .packet import SignedTaskPacket
 from .capability_extraction import extract_capability_token
+from .policy import DelegationPolicy, allow_all_policy
+
+AudiHook = Callable[[str, str | None], None]
 
 def execute_authorized_action(
     capabilities: list[DelegationCapability],
@@ -18,12 +21,16 @@ def execute_authorized_action(
     registry: AgentRegistry | None = None,
     revocation_registry: CapabilityRevocationRegistry | None = None,
     tool_calls_used: int = 0,
+    policy: DelegationPolicy = allow_all_policy,
+    audit_hook: AudiHook | None = None,
 ) -> tuple[bool, Any]:
     """
     Executes a callable only if the capability chain is valid and the action is authorized.
     """
 
     if not capabilities:
+        if audit_hook:
+            audit_hook("no_capabilities", None)
         return False, None
 
     if not verify_capability_chain_for_execution(
@@ -31,16 +38,29 @@ def execute_authorized_action(
         registry=registry,
         revocation_registry=revocation_registry,
     ):
+        if audit_hook:
+            audit_hook("capability_chin_invalid", None)
         return False, None
 
     leaf_capability = capabilities[-1]
+    allowed, reason = policy(leaf_capability, action)
+
+    if not allowed:
+        if audit_hook:
+            audit_hook("policy_denied", reason)
+        return False, reason
 
     if not is_action_authorized(
         leaf_capability,
         action=action,
         tool_calls_used=tool_calls_used,
     ):
+        if audit_hook:
+            audit_hook("action_not_authorized", action)
         return False, None
+
+    if audit_hook:
+        audit_hook("execution_allowed", action)
 
     return True, fn()
 
