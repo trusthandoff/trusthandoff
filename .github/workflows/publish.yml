@@ -1,11 +1,14 @@
 name: Publish to PyPI
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      -"v*"
 
 permissions:
   id-token: write
   contents: read
+  attestations: write
 
 jobs:
   publish:
@@ -28,6 +31,11 @@ jobs:
 
       - name: Build package
         run: python -m build
+
+      - name: Generate build attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: 'dist/*'
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
