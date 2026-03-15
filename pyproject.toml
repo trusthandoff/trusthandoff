@@ -5,15 +5,23 @@ description = "Verifiable task delegation between AI agents"
 readme = "README.md"
 requires-python = ">=3.11"
 
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
 authors = [
-  {name = "Shay Mizuno"}
+    {name = "Shay Mizuno"}
 ]
 
 license = {text = "MIT"}
 
 dependencies = [
-  "pydantic>=2.0",
-  "cryptography>=42.0"
+    "pydantic>=2.0",
+    "cryptography>=42.0"
 ]
 
 [project.optional-dependencies]
@@ -22,5 +30,5 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/shaymizuno/trusthandoff"
-Repository = "https://github.com/shaymizuno/trusthandoff"
+Homepage = "https://github.com/trusthandoff/trusthandoff"
+Repository = "https://github.com/trusthandoff/trusthandoff"
