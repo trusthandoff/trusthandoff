@@ -11,260 +11,529 @@ Releases are published from GitHub Actions using Trusted Publishing and include 
 
 # TrustHandoff
 
-TrustHandoff is a lightweight protocol and SDK for **verifiable task delegation between AI agents**.
+TrustHandoff is the **delegation and accountability layer for agent systems**.
 
-It defines a canonical structure for transferring tasks between agents with:
+It solves a critical blind spot:
 
-- agent identity
-- cryptographic signatures
-- bounded execution permissions
-- delegation chains
-- verifiable decision logic
+Agents can act.  
+Agents can delegate.  
 
-TrustHandoff acts as a **delegation trust layer** for multi-agent systems.
+But today:
 
----
+→ no system proves what authority they had  
+→ no system proves what actually happened  
+→ no system makes them accountable  
 
-# Why TrustHandoff exists
+TrustHandoff makes delegation **verifiable, enforceable, and auditable**.
 
-Modern agent frameworks solve orchestration and communication.
+## Why this exists
 
-They do not solve **verifiable delegation**.
+Modern agent frameworks solve:
 
-| Layer | Example |
-|------|------|
-| Agent ↔ tools | MCP |
-| Agent ↔ communication | A2A |
-| Agent orchestration | LangGraph / CrewAI / AutoGen |
-| **Agent delegation trust** | TrustHandoff |
+- orchestration
+- communication
+- tool usage
 
-TrustHandoff introduces a portable delegation primitive:
+They do NOT solve:
 
-```
+**verifiable delegation and agent accountability**
+
+| Layer | What it solves | Example |
+|---|---|---|
+| Agent ↔ tools | tool/context access | MCP |
+| Agent ↔ agent | communication | A2A |
+| Agent orchestration | workflows | LangGraph / CrewAI / AutoGen |
+| **Delegation + accountability** | **verifiable authority + execution trace** | **TrustHandoff** |
+
+Without this layer, systems rely on implicit trust.
+
+That leads to:
+
+- silent privilege escalation
+- replay attacks
+- context poisoning
+- unverifiable execution
+- no accountability
+
+## The shift
+
+TrustHandoff turns agent actions into something:
+
+- signed
+- bounded
+- traceable
+- enforceable
+- auditable
+
+From:
+
+trust the agent  
+
+To:
+
+**verify the delegation + prove the execution**
+
+## Core primitive
+
 SignedTaskPacket
-```
 
-This packet allows agents to safely hand off tasks while preserving:
+A SignedTaskPacket allows one agent to hand off work to another while preserving:
 
 - authority
 - permissions
 - provenance
-- cryptographic verification
+- cryptographic integrity
 
----
+## What TrustHandoff provides
+
+- Ed25519 signed delegation
+- bounded permissions
+- multi-hop delegation chains
+- nonce + timestamp replay protection
+- revocation enforcement
+- runtime policy enforcement
+- audit hooks
+
+Result:
+
+**deterministic delegation pipeline**
+
+## Demo (attack vs protection)
+
+<!-- INSERT VIDEO / GIF HERE -->
+
+This demo should show:
+
+- replay attack or forged delegation
+- over-permissioned execution attempt
+- TrustHandoff rejection with reason
+
+This is the fastest way to understand the value.
+
+## # TrustHandoff
+
+TrustHandoff is the **delegation and accountability layer for agent systems**.
+
+It solves a critical blind spot:
+
+Agents can act.  
+Agents can delegate.  
+
+But today:
+
+→ no system proves what authority they had  
+→ no system proves what actually happened  
+→ no system makes them accountable  
+
+TrustHandoff makes delegation **verifiable, enforceable, and auditable**.
+
+## Why this exists
+
+Modern agent frameworks solve:
+
+- orchestration
+- communication
+- tool usage
+
+They do NOT solve:
+
+**verifiable delegation and agent accountability**
+
+| Layer | What it solves | Example |
+|---|---|---|
+| Agent ↔ tools | tool/context access | MCP |
+| Agent ↔ agent | communication | A2A |
+| Agent orchestration | workflows | LangGraph / CrewAI / AutoGen |
+| **Delegation + accountability** | **verifiable authority + execution trace** | **TrustHandoff** |
+
+Without this layer, systems rely on implicit trust.
+
+That leads to:
+
+- silent privilege escalation
+- replay attacks
+- context poisoning
+- unverifiable execution
+- no accountability
+
+## The shift
+
+TrustHandoff turns agent actions into something:
+
+- signed
+- bounded
+- traceable
+- enforceable
+- auditable
+
+From:
+
+trust the agent  
+
+To:
+
+**verify the delegation + prove the execution**
+
+## Core primitive
+
+SignedTaskPacket
+
+A SignedTaskPacket allows one agent to hand off work to another while preserving:
+
+- authority
+- permissions
+- provenance
+- cryptographic integrity
+
+## What TrustHandoff provides
+
+- Ed25519 signed delegation
+- bounded permissions
+- multi-hop delegation chains
+- nonce + timestamp replay protection
+- revocation enforcement
+- runtime policy enforcement
+- audit hooks
+
+Result:
+
+**deterministic delegation pipeline**
+
+## Demo (attack vs protection)
+
+<!-- DEMO COMING SOON -->
+
+This demo should show:
+
+- replay attack or forged delegation
+- over-permissioned execution attempt
+- TrustHandoff rejection with reason
+
+This is the fastest way to understand the value.
+
+## Security pipeline
+
+Every packet goes through:
+
+1. signature verification  
+2. nonce replay protection  
+3. timestamp validation  
+4. delegation chain validation  
+5. depth + scope enforcement  
+6. revocation checks  
+7. runtime policy enforcement  
+
+No partial trust.  
+Fail-fast validation.
+
+## Runtime policy enforcement
+
+TrustHandoff supports runtime policy hooks:
+
+- deny specific actions
+- restrict execution dynamically
+- enforce environment rules
+
+Strict mode:
+
+TRUSTHANDOFF_STRICT_MODE=1
+
+If no policy is provided, execution is rejected.
+
+## Accountability (v0.3+)
+
+TrustHandoff extends delegation into **agent accountability**.
+
+Agents do not just receive authority — they must prove execution.
+
+This includes:
+
+- execution attestations
+- signed outcomes
+- verifiable result hashes
+- audit trails
+
+Each step in a delegation chain can produce a **cryptographic execution record**.
+
+This enables:
+
+- auditability  
+- traceability  
+- post-mortem analysis  
+- compliance-ready logs  
+
+From:
+
+“the agent says it did it”  
+
+To:
+
+**the system proves it happened**
+
+## Threat model
+
+TrustHandoff reduces or blocks:
+
+- impersonation  
+- replay attacks  
+- unbounded delegation  
+- context poisoning  
+- authority spoofing  
+
+Out of scope:
+
+- side-channel attacks  
+- denial-of-service  
+- physical key theft  
+
+## Framework adapters
+
+Supported:
+
+- CrewAI  
+- AutoGen  
+- LangGraph  
+
+Adapters map framework-native delegation into TrustHandoff primitives.
 
 ## Positioning
 
-TrustHandoff is a delegation trust layer for multi-agent systems.
+TrustHandoff is NOT:
 
-It is not:
-- a transport protocol
-- a message bus
-- an orchestration framework
-- a replacement for LangGraph, CrewAI, AutoGen, A2A, or MCP
+- a transport layer  
+- a message bus  
+- an orchestration system  
 
-TrustHandoff complements these systems by adding:
+It complements existing systems by adding:
 
-- verifiable delegation
-- bounded authority
-- provenance-aware handoff
-- replay protection
-- multi-hop authority validation
+- verifiable delegation  
+- bounded authority  
+- provenance-aware execution  
+- auditability  
 
-Recommended ecosystem framing:
+Recommended stack:
 
-- MCP = tools / context
-- A2A = agent communication
-- LangGraph / CrewAI / AutoGen = orchestration
-- TrustHandoff = delegation trust layer
+- MCP = tools  
+- A2A = communication  
+- LangGraph / CrewAI / AutoGen = orchestration  
+- TrustHandoff = delegation + accountability  
 
----
+## Quickstart
 
-# Installation
+Minimal flow:
 
-```
-pip install trusthandoff
+- create agents  
+- create packet  
+- sign packet  
+- verify packet  
+- process handoff  
 
-```
----
+Result:
 
-# Quickstart
+ACCEPT → execution allowed  
+REJECT → execution blocked  
 
-Minimal example:
+## Contributing
 
-```python
-from datetime import datetime, timedelta, timezone
-from trusthandoff import (
-    AgentIdentity,
-    Permissions,
-    SignedTaskPacket,
-    sign_packet,
-    verify_packet,
-    process_handoff
-)
+We actively welcome contributors.
 
-planner = AgentIdentity.generate()
-research = AgentIdentity.generate()
+High leverage areas:
 
-packet = SignedTaskPacket(
-    packet_id="pk_example",
-    task_id="task_example",
-    from_agent=planner.agent_id,
-    to_agent=research.agent_id,
-    issued_at=datetime.now(timezone.utc),
-    expires_at=datetime.now(timezone.utc) + timedelta(minutes=10),
-    nonce="nonce-example",
-    intent="Research company background",
-    context={"company": "Example Corp"},
-    permissions=Permissions(
-        allowed_actions=["read", "search"],
-        max_tool_calls=5
-    ),
-    signature_algo="Ed25519",
-    signature="",
-    public_key=planner.public_key_pem
-)
+- adapters  
+- attack simulations  
+- security improvements  
+- execution attestation  
+- real-world integrations  
 
-signed_packet = sign_packet(packet, planner)
+Setup:
 
-verify_packet(signed_packet)
+git clone <repo>  
+cd trusthandoff  
+pip install -e .  
+pytest  
 
-decision = process_handoff(signed_packet)
-
-print(decision.decision)
-print(decision.reason)
-```
-
-Expected output:
-
-```
-ACCEPT
-Packet verified and valid
-```
-
----
-
-# Core primitives
-
-TrustHandoff revolves around four primitives:
-
-```
-SignedTaskPacket
-DelegationEnvelope
-DelegationChain
-PacketDecision
-```
-
-These primitives allow verifiable multi-hop delegation between agents.
-
----
-
-# Framework adapters
-
-TrustHandoff provides adapters for major agent frameworks.
-
-Current adapters:
-
-- CrewAI
-- AutoGen
-- LangGraph
-
-These adapters map framework-native delegation events into TrustHandoff primitives.
-
-See:
-
-```
-specs/adapters.md
-```
-
----
-
-# Specification
-
-Protocol specifications:
-
-```
-specs/trusthandoff-spec-v0.1.md
-specs/trusthandoff-spec-v0.2.md
-```
-
----
-
-# Examples
-
-Example flows are available in:
-
-```
-examples/
-```
-
----
-
-# Vision
-
-TrustHandoff aims to become the **trust layer for delegation in multi-agent systems**.
-
-Rather than replacing agent frameworks, TrustHandoff complements them by providing a secure delegation primitive.
-
----
-
-# Security Pipeline
-
-TrustHandoff enforces a secure delegation pipeline through its middleware.
-
-The verification pipeline is:
-
----
-
-# Threat Model
-
-TrustHandoff is designed to prevent the following attacks during agent-to-agent delegation:
-
-- **Impersonation**  
-  Unsigned or forged packets → signature verification fails
-
-- **Unbounded delegation**  
-  Unlimited recursion or tool access → bounded permissions + max depth enforced
-
-- **Context poisoning**  
-  Malicious context injection → provenance chain allows auditing back to origin
-
-- **Replay attacks**  
-  Re-use of old packets → nonce + replay protection
-
-- **Lost ownership**  
-  Delegated agent claims authority it doesn't have → delegation chain + signer verification
-
-Out of scope (for now):
-
-- side-channel key extraction
-- denial-of-service against verification
-- physical key theft
-
----
+Open a PR.
 
 ## Roadmap
 
-### v0.2
-Core protocol stabilization
-- Signed task packets
-- Delegation chain verification
-- Adapter support (LangGraph, CrewAI, etc.)
-- Middleware verification pipeline
+v0.2
 
-### v0.3+
-Execution Attestation Layer
-- Verifiable completion proofs
-- Execution receipts
-- Optional TEE / zk-based attestation mechanisms
+- protocol stabilization  
+- delegation chain verification  
+- middleware pipeline  
+- adapters  
 
----
+v0.3+
 
-# License
+- execution attestation layer  
+- verifiable completion proofs  
+- execution receipts  
+- optional TEE / zk attestation  
+
+## License
+
+MITSecurity pipeline
+
+Every packet goes through:
+
+1. signature verification  
+2. nonce replay protection  
+3. timestamp validation  
+4. delegation chain validation  
+5. depth + scope enforcement  
+6. revocation checks  
+7. runtime policy enforcement  
+
+No partial trust.  
+Fail-fast validation.
+
+## Runtime policy enforcement
+
+TrustHandoff supports runtime policy hooks:
+
+- deny specific actions
+- restrict execution dynamically
+- enforce environment rules
+
+Strict mode:
+
+TRUSTHANDOFF_STRICT_MODE=1
+
+If no policy is provided, execution is rejected.
+
+## Accountability (v0.3+)
+
+TrustHandoff extends delegation into **agent accountability**.
+
+Agents do not just receive authority — they must prove execution.
+
+This includes:
+
+- execution attestations
+- signed outcomes
+- verifiable result hashes
+- audit trails
+
+Each step in a delegation chain can produce a **cryptographic execution record**.
+
+This enables:
+
+- auditability  
+- traceability  
+- post-mortem analysis  
+- compliance-ready logs  
+
+From:
+
+“the agent says it did it”  
+
+To:
+
+**the system proves it happened**
+
+## Threat model
+
+TrustHandoff reduces or blocks:
+
+- impersonation  
+- replay attacks  
+- unbounded delegation  
+- context poisoning  
+- authority spoofing  
+
+Out of scope:
+
+- side-channel attacks  
+- denial-of-service  
+- physical key theft  
+
+## Framework adapters
+
+Supported:
+
+- CrewAI  
+- AutoGen  
+- LangGraph  
+
+Adapters map framework-native delegation into TrustHandoff primitives.
+
+## Positioning
+
+TrustHandoff is NOT:
+
+- a transport layer  
+- a message bus  
+- an orchestration system  
+
+It complements existing systems by adding:
+
+- verifiable delegation  
+- bounded authority  
+- provenance-aware execution  
+- auditability  
+
+Recommended stack:
+
+- MCP = tools  
+- A2A = communication  
+- LangGraph / CrewAI / AutoGen = orchestration  
+- TrustHandoff = delegation + accountability  
+
+## Quickstart
+
+Minimal flow:
+
+- create agents  
+- create packet  
+- sign packet  
+- verify packet  
+- process handoff  
+
+Result:
+
+ACCEPT → execution allowed  
+REJECT → execution blocked  
+
+## Contributing
+
+We actively welcome contributors.
+
+High leverage areas:
+
+- adapters  
+- attack simulations  
+- security improvements  
+- execution attestation  
+- real-world integrations  
+
+Setup:
+
+git clone <repo>  
+cd trusthandoff  
+pip install -e .  
+pytest  
+
+Open a PR.
+
+## Roadmap
+
+v0.2
+
+- protocol stabilization  
+- delegation chain verification  
+- middleware pipeline  
+- adapters  
+
+v0.3+
+
+- execution attestation layer  
+- verifiable completion proofs  
+- execution receipts  
+- optional TEE / zk attestation  
+
+## License
 
 MIT
-
----
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
