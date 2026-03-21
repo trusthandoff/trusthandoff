@@ -1,85 +1,128 @@
-from datetime import datetime, timedelta, timezone
-from uuid import uuid4
+from typing import Callable, Any, Dict, Optional
 
 from trusthandoff import (
-    AgentIdentity,
-    DelegationChain,
-    DelegationEnvelope,
-    Permissions,
-    SignedTaskPacket,
-    process_handoff,
-    sign_packet,
+    create_attestation,
+    verify_attestation,
+    ExecutionAttestation,
+    validate_attestation_payload,
 )
 
 
-def create_packet(
-    source_identity: AgentIdentity,
-    target_agent_id: str,
-    state_intent: str,
-    state_context: dict,
-    allowed_actions: list[str] | None = None,
-    max_tool_calls: int = 5,
-    expires_in_minutes: int = 10,
-    capability_token: str | None = None,
-) -> SignedTaskPacket:
-    if allowed_actions is None:
-        allowed_actions = ["read", "search", "summarize"]
+class TrustHandoffLangGraphAdapter:
+    def __init__(self, identity, packet_id_key: str = "packet_id"):
+        self.identity = identity
+        self.packet_id_key = packet_id_key
 
-    return SignedTaskPacket(
-        packet_id=f"pk_{uuid4().hex}",
-        task_id=f"task_{uuid4().hex}",
-        from_agent=source_identity.agent_id,
-        to_agent=target_agent_id,
-        issued_at=datetime.now(timezone.utc),
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=expires_in_minutes),
-        nonce=f"nonce_{uuid4().hex}",
-        capability_token=capability_token,
-        intent=state_intent,
-        context=state_context,
-        permissions=Permissions(
-            allowed_actions=allowed_actions,
-            max_tool_calls=max_tool_calls,
-        ),
-        signature_algo="Ed25519",
-        signature="",
-        public_key=source_identity.public_key_pem,
-    )
+    def wrap_node(self, fn: Callable[[Dict[str, Any]], Dict[str, Any]]):
+        def wrapped(state: Dict[str, Any]) -> Dict[str, Any]:
+            packet_id = state.get(self.packet_id_key)
+            if not packet_id:
+                raise ValueError(f"Missing {self.packet_id_key!r} in state")
+
+            try:
+                result = fn(state)
+            except Exception as node_exc:
+                error_result = {
+                    "error": str(node_exc),
+                    "error_type": type(node_exc).__name__,
+                }
+
+                try:
+                    attestation = create_attestation(
+                        packet_id=packet_id,
+                        result=error_result,
+                        identity=self.identity,
+                        status="ERROR",
+                        reason={"node_error": True},
+                    )
+                except Exception as attest_exc:
+                    error_result["attestation_failure"] = str(attest_exc)
+                    attestation = None
+
+                return {
+                    "result": error_result,
+                    "attestation": attestation,
+                }
+
+            # Programming / protocol errors must raise
+            validate_attestation_payload(result)
+
+            try:
+                attestation = create_attestation(
+                    packet_id=packet_id,
+                    result=result,
+                    identity=self.identity,
+                    status="OK",
+                )
+            except Exception as attest_exc:
+                return {
+                    "result": {
+                        "original_result": result,
+                        "attestation_failure": str(attest_exc),
+                    },
+                    "attestation": None,
+                }
+
+            return {
+                "result": result,
+                "attestation": attestation,
+            }
+
+        return wrapped
+
+    def verify_node_output(
+        self,
+        output: Dict[str, Any],
+        public_key_pem: str,
+        max_age_seconds: int = 300,
+        current_timestamp_ms: Optional[int] = None,
+        seen_nonces: Optional[set] = None,
+    ) -> bool:
+        if not isinstance(output, dict):
+            return False
+
+        attestation_raw = output.get("attestation")
+        result = output.get("result")
+
+        if result is None:
+            return False
+
+        if isinstance(attestation_raw, dict):
+            try:
+                attestation = ExecutionAttestation.model_validate(attestation_raw)
+            except Exception:
+                return False
+        elif isinstance(attestation_raw, ExecutionAttestation):
+            attestation = attestation_raw
+        else:
+            return False
+
+        verified = verify_attestation(
+            attestation=attestation,
+            result=result,
+            public_key_pem=public_key_pem,
+            max_age_seconds=max_age_seconds,
+            now_ms=current_timestamp_ms,
+        )
+
+        if not verified:
+            return False
+
+        if seen_nonces is not None:
+            nonce_key = (attestation.agent_pubkey_fingerprint, attestation.nonce)
+            if nonce_key in seen_nonces:
+                return False
+            seen_nonces.add(nonce_key)
+
+        return True
 
 
-def create_envelope(packet: SignedTaskPacket) -> DelegationEnvelope:
-    chain = DelegationChain(
-        packet_ids=[packet.packet_id],
-        agents=[packet.from_agent],
-    )
-    return DelegationEnvelope(packet=packet, chain=chain)
-
-
-def process_framework_handoff(
-    source_identity: AgentIdentity,
-    target_agent_id: str,
-    state_intent: str,
-    state_context: dict,
-    allowed_actions: list[str] | None = None,
-    max_tool_calls: int = 5,
-):
-    packet = create_packet(
-        source_identity=source_identity,
-        target_agent_id=target_agent_id,
-        state_intent=state_intent,
-        state_context=state_context,
-        allowed_actions=allowed_actions,
-        max_tool_calls=max_tool_calls,
-    )
-
-    signed_packet = sign_packet(packet, source_identity)
-    envelope = create_envelope(signed_packet)
-    decision = process_handoff(envelope.packet)
-
-    if decision.decision == "ACCEPT":
-        envelope.chain.add_handoff(signed_packet.packet_id, target_agent_id)
-
+def pretty_print_attestation(attestation: ExecutionAttestation) -> dict:
     return {
-        "packet": signed_packet,
-        "envelope": envelope,
-        "decision": decision,
+        "packet_id": attestation.packet_id,
+        "status": attestation.status,
+        "hash": attestation.outcome_hash[:12] + "...",
+        "signed_by": attestation.signed_by,
+        "timestamp_ms": attestation.timestamp_ms,
+        "nonce": hex(attestation.nonce)[:10] + "...",
     }
