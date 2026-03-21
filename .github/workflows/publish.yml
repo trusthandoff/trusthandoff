@@ -38,4 +38,4 @@ jobs:
           subject-path: 'dist/*'
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@f2e89b06e8e6a6c85b30562091f4f6d7b3a1fc5b
+        uses: pypa/gh-action-pypi-publish@frelease/v1
