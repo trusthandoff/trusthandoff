@@ -1,6 +1,6 @@
 [project]
 name = "trusthandoff"
-version = "0.2.5"
+version = "0.3.0"
 description = "Verifiable task delegation between AI agents"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -14,14 +14,15 @@ classifiers = [
 ]
 
 authors = [
-    {name = "Shay Mizuno"}
+    {name = "Shay Mizuno"},
+    {name = "Hind Tagmouti"},
 ]
 
 license = {text = "MIT"}
 
 dependencies = [
-    "pydantic==2.7.4",
-    "cryptography==42.0.8"
+    "pydantic>=2.7,<3",
+    "cryptography>=42,<44",
 ]
 
 [project.optional-dependencies]
