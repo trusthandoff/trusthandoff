@@ -1,5 +1,3 @@
-import pytest
-
 from adapters.adapter_autogen import TrustHandoffAutoGenAdapter
 
 
